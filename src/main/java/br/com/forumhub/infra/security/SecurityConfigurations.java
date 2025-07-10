@@ -19,8 +19,9 @@ public class SecurityConfigurations {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/cursos", "/cursos/**",
-                                "/topicos", "/topicos/**"
-                        ).permitAll()  // libera qualquer método em /cursos e /topicos /topico/{id}
+                                "/topicos", "/topicos/**",
+                                "/perfis","/perfis/**"
+                        ).permitAll()  // libera qualquer método em /cursos e /topicos /topico/{id} /perfis
                         .anyRequest().authenticated()
                 )
                 .build();
