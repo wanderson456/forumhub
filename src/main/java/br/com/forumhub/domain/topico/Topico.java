@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "topicos")
 @Entity(name = "topico")
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Topico {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,12 +37,12 @@ public class Topico {
     @JoinColumn(name = "curso_id")
     private Curso curso;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "resposta_id")
-    private Resposta resposta;
     @ManyToOne
     @JoinColumn(name = "usuario_id")
-    private Usuario autor;  // adiciona o autor
+    private Usuario autor;
+
+    @OneToMany(mappedBy = "topico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Resposta> respostas = new ArrayList<>();
 
     public Topico(DadosCadastroTopico dados, Curso curso, Usuario autor) {
         this.titulo = dados.titulo();
@@ -50,17 +53,16 @@ public class Topico {
         this.autor = autor;
     }
 
-
     public void atualizarInformaçoes(@Valid DadosAtualizacaoTopico dados) {
-        if(dados.titulo()!= null){
-            this.titulo=dados.titulo();
+        if (dados.titulo() != null) {
+            this.titulo = dados.titulo();
         }
-        if(dados.mensagem()!= null){
-            this.mensagem=dados.mensagem();
+        if (dados.mensagem() != null) {
+            this.mensagem = dados.mensagem();
         }
     }
 
     public void excluir() {
-        this.ativo=false;
+        this.ativo = false;
     }
 }

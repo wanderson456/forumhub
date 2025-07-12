@@ -1,9 +1,10 @@
 package br.com.forumhub.domain.perfil;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
 
 @Entity
-public class Perfil {
+public class Perfil implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,7 +17,13 @@ public class Perfil {
 
     public Perfil(DadosCadastroPerfil dados) {
         this.nome = dados.nome();
-        this.ativo = true; // opcional aqui, pois já está no campo, mas pode manter por clareza
+        this.ativo = true;
+    }
+
+    public Perfil(Long id, String nome, boolean ativo) {
+        this.id = id;
+        this.nome = nome;
+        this.ativo = ativo;
     }
 
     public Long getId() {
@@ -31,8 +38,13 @@ public class Perfil {
         return ativo;
     }
 
-
     public void excluir() {
         this.ativo = false;
+    }
+
+    // Método necessário para Spring Security
+    @Override
+    public String getAuthority() {
+        return nome;
     }
 }

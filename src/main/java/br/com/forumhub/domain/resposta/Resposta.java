@@ -1,6 +1,7 @@
 package br.com.forumhub.domain.resposta;
 
 import br.com.forumhub.domain.topico.Topico;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Table(name = "respostas") // Corrigido o nome da tabela
+@Table(name = "respostas")
 @Entity(name = "resposta")
 @Getter
 @NoArgsConstructor
@@ -25,7 +26,9 @@ public class Resposta {
 
     @ManyToOne
     @JoinColumn(name = "topico_id")
+    @JsonBackReference
     private Topico topico;
+
 
     private LocalDateTime dataCriacao;
     private String autor;
