@@ -1,10 +1,12 @@
 package br.com.forumhub.domain.usuario;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.core.userdetails.UserDetails;
 
-public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
+import java.util.Optional;
 
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    UserDetails findByEmail(String email);
+    // Retorna Optional para facilitar controle de null
+    Optional<Usuario> findByEmail(String email);
+
 }

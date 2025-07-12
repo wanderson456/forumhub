@@ -2,34 +2,45 @@ package br.com.forumhub.controller;
 
 import br.com.forumhub.domain.curso.CursoRepository;
 import br.com.forumhub.domain.topico.*;
+import br.com.forumhub.domain.usuario.UsuarioRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.web.SecurityMarker;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("topicos")
-
 public class TopicoController {
+
     @Autowired
     private CursoRepository cursoRepository;
+
     @Autowired
     private TopicoRepository repository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
-    @Transactional
     @PostMapping
-    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroTopico dados, UriComponentsBuilder uriBuilder){
+    @Transactional
+    public ResponseEntity<DadosDetalheTopicos> cadastrar(@RequestBody @Valid DadosCadastroTopico dados, UriComponentsBuilder uriBuilder) {
         var curso = cursoRepository.findById(dados.idCurso())
-                .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso não encontrado"));
 
-        var topico = new Topico(dados, curso,null);
+        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        var autor = usuarioRepository.findByEmail(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
+        var topico = new Topico(dados, curso, autor);
         repository.save(topico);
 
         var uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topico.getId()).toUri();
@@ -37,31 +48,36 @@ public class TopicoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<DadosListagemTopicos>> listar(@PageableDefault(size = 10,sort = "id")Pageable paginacao){
+    public ResponseEntity<Page<DadosListagemTopicos>> listar(@PageableDefault(size = 10, sort = "id") Pageable paginacao) {
         var page = repository.findByAtivoTrue(paginacao).map(DadosListagemTopicos::new);
         return ResponseEntity.ok(page);
     }
 
     @PutMapping
     @Transactional
-    public  ResponseEntity atualizar( @RequestBody @Valid DadosAtualizacaoTopico dados){
-        var topico = repository.getReferenceById(dados.id());
+    public ResponseEntity<DadosDetalheTopicos> atualizar(@RequestBody @Valid DadosAtualizacaoTopico dados) {
+        var topico = repository.findById(dados.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico não encontrado"));
+
         topico.atualizarInformaçoes(dados);
         return ResponseEntity.ok(new DadosDetalheTopicos(topico));
     }
-@DeleteMapping("/{id}")
+
+    @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity excluir( @PathVariable Long id){
-        var topico = repository.getReferenceById(id);
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        var topico = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico não encontrado"));
+
         topico.excluir();
         return ResponseEntity.noContent().build();
+    }
 
-}
-@GetMapping("/{id}")
-    public ResponseEntity detalhar(@PathVariable Long id ){
-        var topico = repository.getReferenceById(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<DadosDetalheTopicos> detalhar(@PathVariable Long id) {
+        var topico = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tópico não encontrado"));
+
         return ResponseEntity.ok(new DadosDetalheTopicos(topico));
-}
-
-
+    }
 }

@@ -1,6 +1,7 @@
 package br.com.forumhub.domain.resposta;
 
 import br.com.forumhub.domain.topico.Topico;
+import br.com.forumhub.domain.usuario.Usuario;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,9 @@ public class Resposta {
 
 
     private LocalDateTime dataCriacao;
-    private String autor;
+    @ManyToOne
+    @JoinColumn(name = "autor_id")
+    private Usuario autor;
+
     private String solucao;
 }

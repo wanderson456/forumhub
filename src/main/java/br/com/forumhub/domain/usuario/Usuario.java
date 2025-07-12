@@ -27,6 +27,10 @@ public class Usuario implements UserDetails {
     private String nome;
     private String email;
     private String senha;
+    @ManyToOne
+    @JoinColumn(name = "autor_id")
+    private Usuario autor;
+
 
     @ManyToOne
     @JoinColumn(name = "perfil_id")
